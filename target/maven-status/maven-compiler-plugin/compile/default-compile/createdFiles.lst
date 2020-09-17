@@ -1,0 +1,5 @@
+com\shuai\crawlor\domain\CrawlResult.class
+com\shuai\crawlor\service\IJob.class
+com\shuai\crawlor\service\AbstractJob.class
+com\shuai\crawlor\domain\CrawlMeta.class
+com\shuai\crawlor\job\SimpleCrawlJob.class
