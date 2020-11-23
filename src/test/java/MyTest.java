@@ -32,4 +32,5 @@ public class MyTest {
         System.out.println(crawlResult.getResult().get("div[class=article-box__header] h1"));
 
     }
+
 }

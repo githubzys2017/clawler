@@ -4,6 +4,8 @@ import com.shuai.crawlor.domain.CrawlMeta;
 import com.shuai.crawlor.domain.CrawlResult;
 import com.shuai.crawlor.service.AbstractJob;
 import lombok.Data;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -44,59 +46,67 @@ public class SimpleCrawlJob extends AbstractJob {
      * @throws Exception
      */
     public void doFetchPage() throws Exception {
-        CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
+        HttpClient httpClient = HttpClients.createDefault();
         HttpGet get = new HttpGet(crawlMeta.getUrl());
-        CloseableHttpResponse response = closeableHttpClient.execute(get);
+
+        get.addHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        get.addHeader("connection", "Keep-Alive");
+        get.addHeader("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+
+        HttpResponse response = httpClient.execute(get);
 
         String res = EntityUtils.toString(response.getEntity());
         if (response.getStatusLine().getStatusCode() == 200) {
-
+            doParse(res);
+        } else {
+            crawlResult = new CrawlResult();
+            crawlResult.setStatus(response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
         }
 
 
-        URL url = new URL(crawlMeta.getUrl());
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        BufferedReader in = null;
-
-        StringBuilder result = new StringBuilder();
-
-        try {
-            // 设置通用的请求属性
-            connection.setRequestProperty("accept", "*/*");
-            connection.setRequestProperty("connection", "Keep-Alive");
-            connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
-
-            //建立实际链接
-            connection.connect();
-
-            Map<String, List<String>> map = connection.getHeaderFields();
-
-            //遍历所有的响应头字段
-            for (String key : map.keySet()) {
-                System.out.println(key + "--->" + map.get(key));
-            }
-
-            //定义 BufferedReader输入流来读取URL的响应
-            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-            String line;
-
-            while ((line = in.readLine()) != null) {
-                result.append(line);
-            }
-        } finally {
-            //关闭输入流
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                e.getStackTrace();
-            }
-        }
-
-        doParse(result.toString());
+//        URL url = new URL(crawlMeta.getUrl());
+//        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//
+//        BufferedReader in = null;
+//
+//        StringBuilder result = new StringBuilder();
+//
+//        try {
+//            // 设置通用的请求属性
+//            connection.setRequestProperty("accept", "*/*");
+//            connection.setRequestProperty("connection", "Keep-Alive");
+//            connection.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+//
+//            //建立实际链接
+//            connection.connect();
+//
+//            Map<String, List<String>> map = connection.getHeaderFields();
+//
+//            //遍历所有的响应头字段
+//            for (String key : map.keySet()) {
+//                System.out.println(key + "--->" + map.get(key));
+//            }
+//
+//            //定义 BufferedReader输入流来读取URL的响应
+//            in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//
+//            String line;
+//
+//            while ((line = in.readLine()) != null) {
+//                result.append(line);
+//            }
+//        } finally {
+//            //关闭输入流
+//            try {
+//                if (in != null) {
+//                    in.close();
+//                }
+//            } catch (IOException e) {
+//                e.getStackTrace();
+//            }
+//        }
+//
+//        doParse(result.toString());
     }
 
     private void doParse(String html) {
@@ -115,4 +125,5 @@ public class SimpleCrawlJob extends AbstractJob {
         crawlResult.setHtmlDoc(doc);
         crawlResult.setResult(map);
     }
+
 }
